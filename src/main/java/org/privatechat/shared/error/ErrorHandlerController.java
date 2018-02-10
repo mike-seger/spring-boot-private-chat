@@ -1,12 +1,14 @@
 package org.privatechat.shared.error;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Scanner;
+
 import org.privatechat.shared.exceptions.ValidationException;
 import org.privatechat.shared.http.JSONResponseHelper;
 import org.privatechat.shared.interfaces.IErrorHandlerController;
 import org.privatechat.user.exceptions.IsSameUserException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -19,53 +21,43 @@ import org.springframework.web.bind.annotation.RestController;
 @ControllerAdvice
 @RestController
 public class ErrorHandlerController implements IErrorHandlerController {
-  @RequestMapping(value="/error", method=RequestMethod.GET, produces="text/html")
-  @ResponseBody
-  public ResponseEntity<String> error() {
-    return new ResponseEntity<String>(routeToIndexFallBack(), HttpStatus.NOT_FOUND);
-  }
+	private static Logger logger = LoggerFactory.getLogger(ErrorHandlerController.class);
 
-  private String routeToIndexFallBack() {
-    Scanner scanner;
-    StringBuilder result = new StringBuilder("");
-    ClassLoader classLoader = getClass().getClassLoader();
+	@RequestMapping(value = "/error", method = RequestMethod.GET, produces = "text/html")
+	@ResponseBody
+	public ResponseEntity<String> error() {
+		return new ResponseEntity<String>(routeToIndexFallBack(), HttpStatus.NOT_FOUND);
+	}
 
-    try {
-      scanner = new Scanner(new File(classLoader.getResource("static/index.html").getFile()));
+	private String routeToIndexFallBack() {
+		String location = "/static/index.html";
+		try (InputStream is = getClass().getResourceAsStream(location); Scanner scanner = new Scanner(is)) {
+				scanner.useDelimiter("\\Z");
+				return scanner.next();
+		} catch (Exception e) {
+			logger.error("Error occurred loading {}", location, e);
+			return "Error loading: " + location;
+		}
+	}
 
-      while (scanner.hasNextLine()) {
-        String curLine = scanner.nextLine();
-        result.append(curLine).append("\n");
-      }
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<String> exception(Exception exception) {
+		logger.error("Error occurred", exception);
+		if (isExceptionInWhiteList(exception)) {
+			return JSONResponseHelper.createResponse(exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
-      scanner.close();
-      return result.toString();
-    } catch (FileNotFoundException e) {
-      return "Not found.";
-    }
-  }
+		return JSONResponseHelper.createResponse("Error. Contact your administrator", HttpStatus.INTERNAL_SERVER_ERROR);
+	}
 
-  @ExceptionHandler(Exception.class)
-  public ResponseEntity<String> exception(Exception exception) {
-    if (isExceptionInWhiteList(exception)) {
-      return JSONResponseHelper.createResponse(
-        exception.getMessage(),
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+	// There's no way to iterate over exceptions with the 'instanceof' operator
+	private Boolean isExceptionInWhiteList(Exception exception) {
+		if (exception instanceof IsSameUserException)
+			return true;
+		if (exception instanceof ValidationException)
+			return true;
+		// TODO: if (exception instanceof UserNotFoundException) return true;
 
-    return JSONResponseHelper.createResponse(
-      "Error. Contact your administrator",
-      HttpStatus.INTERNAL_SERVER_ERROR
-    );  
-  }
-
-  // There's no way to iterate over exceptions with the 'instanceof' operator
-  private Boolean isExceptionInWhiteList(Exception exception) {
-    if (exception instanceof IsSameUserException) return true;
-    if (exception instanceof ValidationException) return true;
-    // TODO: if (exception instanceof UserNotFoundException) return true;
-
-    return false;
-  }
+		return false;
+	}
 }
