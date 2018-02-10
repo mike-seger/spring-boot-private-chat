@@ -1,6 +1,6 @@
 package org.privatechat;
 
-import org.privatechat.shared.security.ApplicationSecurity;
+import org.privatechat.common.ApplicationSecurity;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -10,13 +10,13 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
 @SpringBootApplication
 @EnableRedisHttpSession
 public class PrivateChatApplication {
-  @Bean
-  public WebSecurityConfigurerAdapter webSecurityConfigurerAdapter() {
-    return new ApplicationSecurity();
-  }
+	@Bean
+	public WebSecurityConfigurerAdapter webSecurityConfigurerAdapter() {
+		return new ApplicationSecurity();
+	}
 
-  public static void main(String[] args) {
-    // mvn spring-boot:run -Drun.jvmArguments='-Dserver.port={PORT}'
-    SpringApplication.run(PrivateChatApplication.class, args);
-  }
+	public static void main(String[] args) {
+		// mvn spring-boot:run -Drun.jvmArguments='-Dserver.port={PORT}'
+		SpringApplication.run(PrivateChatApplication.class, args);
+	}
 }
