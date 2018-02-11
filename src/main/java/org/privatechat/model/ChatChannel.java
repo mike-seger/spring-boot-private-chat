@@ -15,15 +15,15 @@ public class ChatChannel {
 
 	@Id
 	@NotNull
-	private String uuid;
+	public String uuid;
 
 	@OneToOne
 	@JoinColumn(name = "userIdOne")
-	private User userOne;
+	public User userOne;
 
 	@OneToOne
 	@JoinColumn(name = "userIdTwo")
-	private User userTwo;
+	public User userTwo;
 
 	public ChatChannel(User userOne, User userTwo) {
 		this.uuid = UUID.randomUUID().toString();
@@ -32,25 +32,5 @@ public class ChatChannel {
 	}
 
 	public ChatChannel() {
-	}
-
-	public void setUserTwo(User user) {
-		this.userTwo = user;
-	}
-
-	public void setUserOne(User user) {
-		this.userOne = user;
-	}
-
-	public User getUserOne() {
-		return this.userOne;
-	}
-
-	public User getUserTwo() {
-		return this.userTwo;
-	}
-
-	public String getUuid() {
-		return this.uuid;
 	}
 }

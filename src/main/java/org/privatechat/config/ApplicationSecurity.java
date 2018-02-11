@@ -1,4 +1,4 @@
-package org.privatechat.common;
+package org.privatechat.config;
 
 import java.io.IOException;
 
@@ -36,7 +36,10 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private AuthenticationFailureHandler authenticationFailureHandler;
-
+	
+	@Autowired
+	private ApplicationSecurityConfig applicationSecurityConfig;
+	
 	@Bean
 	@Override
 	public AuthenticationManager authenticationManagerBean() throws Exception {
@@ -55,15 +58,13 @@ public class ApplicationSecurity extends WebSecurityConfigurerAdapter {
 		http.exceptionHandling().authenticationEntryPoint(this.authenticationEntryPointHandler);
 
 		http.formLogin().successHandler(this.authenticationSuccessHandler)
-				.failureHandler(this.authenticationFailureHandler);
+			.failureHandler(this.authenticationFailureHandler);
 
 		http.logout().logoutSuccessUrl("/");
 
 		http.authorizeRequests()
-				.antMatchers("/index.html", "/login", "/api/user/register", "/", "/app.min.js", "/app.min.css",
-						"/vendors.min.js", "/vendors.min.css", "/login/LoginView.html",
-						"/registration/RegistrationView.html")
-				.permitAll().anyRequest().authenticated();
+			.antMatchers(applicationSecurityConfig.urlMatchers)
+			.permitAll().anyRequest().authenticated();
 	}
 }
 

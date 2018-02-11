@@ -1,6 +1,6 @@
 package org.privatechat;
 
-import org.privatechat.common.ApplicationSecurity;
+import org.privatechat.config.ApplicationSecurity;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;

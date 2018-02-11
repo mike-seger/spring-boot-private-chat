@@ -80,15 +80,15 @@ public class UserService implements UserDetailsService {
 		return user != null;
 	}
 
-	public void addUser(Registration registrationDTO) throws ValidationException {
-		if (this.doesUserExist(registrationDTO.email)) {
+	public void addUser(Registration registration) throws ValidationException {
+		if (this.doesUserExist(registration.email)) {
 			throw new ValidationException("User already exists.");
 		}
 
-		String encryptedPassword = new BCryptPasswordEncoder().encode(registrationDTO.password);
+		String encryptedPassword = new BCryptPasswordEncoder().encode(registration.password);
 
 		try {
-			User user = new User(registrationDTO.email, registrationDTO.fullName, encryptedPassword,
+			User user = new User(registration.email, registration.fullName, encryptedPassword,
 					"STANDARD-ROLE");
 
 			userRepository.save(user);

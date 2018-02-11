@@ -1,30 +1,18 @@
 package org.privatechat.controller;
 
 import org.privatechat.common.JSONResponseHelper;
-import org.privatechat.common.ResourceUtil;
 import org.privatechat.exception.IsSameUserException;
 import org.privatechat.exception.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 
-@ControllerAdvice
-@RestController
+@Controller
 public class ErrorHandlerController {
 	private static Logger logger = LoggerFactory.getLogger(ErrorHandlerController.class);
-
-	@RequestMapping(value = "/error", method = RequestMethod.GET, produces = "text/html")
-	@ResponseBody
-	public ResponseEntity<String> error() {
-		return new ResponseEntity<String>(ResourceUtil.load("/static/index.html"), HttpStatus.NOT_FOUND);
-	}
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<String> exception(Exception exception) {

@@ -32,10 +32,10 @@ public class ChatService {
 
 	private final int MAX_PAGABLE_CHAT_MESSAGES = 100;
 
-	private String getExistingChannel(ChatChannelInitialization chatChannelInitializationDTO) {
+	private String getExistingChannel(ChatChannelInitialization chatChannelInitialization) {
 		List<ChatChannel> channel = chatChannelRepository.findExistingChannel(
-			chatChannelInitializationDTO.userIdOne, chatChannelInitializationDTO.userIdTwo);
-		return (channel != null && !channel.isEmpty()) ? channel.get(0).getUuid() : null;
+			chatChannelInitialization.userIdOne, chatChannelInitialization.userIdTwo);
+		return (channel != null && !channel.isEmpty()) ? channel.get(0).uuid : null;
 	}
 
 	private String newChatSession(ChatChannelInitialization chatChannelInitialization)
@@ -43,7 +43,7 @@ public class ChatService {
 		ChatChannel channel = new ChatChannel(userService.getUser(chatChannelInitialization.userIdOne),
 				userService.getUser(chatChannelInitialization.userIdTwo));
 		chatChannelRepository.save(channel);
-		return channel.getUuid();
+		return channel.uuid;
 	}
 
 	public String establishChatSession(ChatChannelInitialization chatChannelInitialization)
@@ -68,8 +68,8 @@ public class ChatService {
 
 	public List<ChatMessageInfo> getExistingChatMessages(String channelUuid) {
 		ChatChannel channel = chatChannelRepository.getChannelDetails(channelUuid);
-		List<ChatMessage> chatMessages = chatMessageRepository.getExistingChatMessages(channel.getUserOne().id,
-			channel.getUserTwo().id, new PageRequest(0, MAX_PAGABLE_CHAT_MESSAGES));
+		List<ChatMessage> chatMessages = chatMessageRepository.getExistingChatMessages(channel.userOne.id,
+			channel.userTwo.id, new PageRequest(0, MAX_PAGABLE_CHAT_MESSAGES));
 		return Lists.reverse(chatMessages).stream().map(c -> new ChatMessageInfo(c)).collect(Collectors.toList());
 	}
 }
