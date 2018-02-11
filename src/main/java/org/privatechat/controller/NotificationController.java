@@ -1,4 +1,4 @@
-package org.privatechat.user.controller;
+package org.privatechat.controller;
 
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.SendTo;

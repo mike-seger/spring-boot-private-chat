@@ -1,9 +1,13 @@
 package org.privatechat.model;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-
 import java.util.UUID;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "chatChannel")

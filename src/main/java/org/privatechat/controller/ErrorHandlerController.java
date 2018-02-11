@@ -1,9 +1,7 @@
-package org.privatechat.chat.controller;
-
-import java.io.InputStream;
-import java.util.Scanner;
+package org.privatechat.controller;
 
 import org.privatechat.common.JSONResponseHelper;
+import org.privatechat.common.ResourceUtil;
 import org.privatechat.exception.IsSameUserException;
 import org.privatechat.exception.ValidationException;
 import org.slf4j.Logger;
@@ -25,18 +23,7 @@ public class ErrorHandlerController {
 	@RequestMapping(value = "/error", method = RequestMethod.GET, produces = "text/html")
 	@ResponseBody
 	public ResponseEntity<String> error() {
-		return new ResponseEntity<String>(routeToIndexFallBack(), HttpStatus.NOT_FOUND);
-	}
-
-	private String routeToIndexFallBack() {
-		String location = "/static/index.html";
-		try (InputStream is = getClass().getResourceAsStream(location); Scanner scanner = new Scanner(is)) {
-			scanner.useDelimiter("\\Z");
-			return scanner.next();
-		} catch (Exception e) {
-			logger.error("Error occurred loading {}", location, e);
-			return "Error loading: " + location;
-		}
+		return new ResponseEntity<String>(ResourceUtil.load("/static/index.html"), HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(Exception.class)
@@ -49,14 +36,7 @@ public class ErrorHandlerController {
 		return JSONResponseHelper.createResponse("Error. Contact your administrator", HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	// There's no way to iterate over exceptions with the 'instanceof' operator
 	private Boolean isExceptionInWhiteList(Exception exception) {
-		if (exception instanceof IsSameUserException)
-			return true;
-		if (exception instanceof ValidationException)
-			return true;
-		// TODO: if (exception instanceof UserNotFoundException) return true;
-
-		return false;
+		return exception instanceof IsSameUserException || exception instanceof ValidationException;
 	}
 }

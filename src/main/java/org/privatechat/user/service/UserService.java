@@ -1,23 +1,20 @@
 package org.privatechat.user.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.ConstraintViolationException;
 
-import org.privatechat.dto.NotificationDto;
-import org.privatechat.dto.RegistrationDto;
-import org.privatechat.dto.UserDto;
+import org.privatechat.dto.Notification;
+import org.privatechat.dto.Registration;
+import org.privatechat.dto.UserInfo;
 import org.privatechat.exception.UserNotFoundException;
 import org.privatechat.exception.ValidationException;
 import org.privatechat.model.User;
 import org.privatechat.repo.UserRepository;
-import org.privatechat.user.mapper.UserMapper;
-import org.privatechat.user.strategy.IUserRetrievalStrategy;
-import org.privatechat.user.strategy.UserRetrievalByEmailStrategy;
-import org.privatechat.user.strategy.UserRetrievalByIdStrategy;
-import org.privatechat.user.strategy.UserRetrievalBySecurityContextStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,39 +29,27 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserService implements UserDetailsService {
+	private static Logger logger = LoggerFactory.getLogger(UserService.class);
+
+	@Autowired
 	private UserRepository userRepository;
 
 	@Autowired
 	private SimpMessagingTemplate simpMessagingTemplate;
 
-	@Autowired
-	private BeanFactory beanFactory;
-
-	@Autowired
-	public UserService(UserRepository userRepository) {
-		this.userRepository = userRepository;
-	}
-
-	private <T> User getUser(T userIdentifier, IUserRetrievalStrategy<T> strategy) throws UserNotFoundException {
-		User user = strategy.getUser(userIdentifier);
-
-		if (user == null) {
-			throw new UserNotFoundException("User not found: "+userIdentifier);
-		}
-
-		return user;
-	}
-
 	public User getUser(long userId) throws BeansException, UserNotFoundException {
-		return this.getUser(userId, beanFactory.getBean(UserRetrievalByIdStrategy.class));
+		return userRepository.findById(userId);
 	}
 
 	public User getUser(String userEmail) throws BeansException, UserNotFoundException {
-		return this.getUser(userEmail, beanFactory.getBean(UserRetrievalByEmailStrategy.class));
+		return userRepository.findByEmail(userEmail);
 	}
 
 	public User getUser(SecurityContext userSecurityContext) throws BeansException, UserNotFoundException {
-		return this.getUser(userSecurityContext, beanFactory.getBean(UserRetrievalBySecurityContextStrategy.class));
+		org.springframework.security.core.userdetails.User userFromSecurityContext;
+		userFromSecurityContext = (org.springframework.security.core.userdetails.User) userSecurityContext
+				.getAuthentication().getPrincipal();
+		return userRepository.findByEmail(userFromSecurityContext.getUsername());
 	}
 
 	@Override
@@ -75,8 +60,8 @@ public class UserService implements UserDetailsService {
 			return null;
 		}
 
-		UserDetails userDetails = new org.springframework.security.core.userdetails.User(user.getEmail(),
-				user.getPassword(), AuthorityUtils.createAuthorityList(user.getRole()));
+		UserDetails userDetails = new org.springframework.security.core.userdetails.User(user.email,
+				user.password, AuthorityUtils.createAuthorityList(user.role));
 
 		Authentication authentication = null;
 		try {
@@ -95,15 +80,15 @@ public class UserService implements UserDetailsService {
 		return user != null;
 	}
 
-	public void addUser(RegistrationDto registrationDTO) throws ValidationException {
-		if (this.doesUserExist(registrationDTO.getEmail())) {
+	public void addUser(Registration registrationDTO) throws ValidationException {
+		if (this.doesUserExist(registrationDTO.email)) {
 			throw new ValidationException("User already exists.");
 		}
 
-		String encryptedPassword = new BCryptPasswordEncoder().encode(registrationDTO.getPassword());
+		String encryptedPassword = new BCryptPasswordEncoder().encode(registrationDTO.password);
 
 		try {
-			User user = new User(registrationDTO.getEmail(), registrationDTO.getFullName(), encryptedPassword,
+			User user = new User(registrationDTO.email, registrationDTO.fullName, encryptedPassword,
 					"STANDARD-ROLE");
 
 			userRepository.save(user);
@@ -112,33 +97,27 @@ public class UserService implements UserDetailsService {
 		}
 	}
 
-	public List<UserDto> retrieveFriendsList(User user) {
-		List<User> users = userRepository.findFriendsListFor(user.getEmail());
-
-		return UserMapper.mapUsersToUserDTOs(users);
+	public List<UserInfo> retrieveFriendsList(User user) {
+		List<User> users = userRepository.findFriendsListFor(user.email);
+		return users.stream().map(u -> new UserInfo(u)).collect(Collectors.toList());
 	}
 
-	public UserDto retrieveUserInfo(User user) {
-		return new UserDto(user.getId(), user.getEmail(), user.getFullName());
+	public UserInfo retrieveUserInfo(User user) {
+		return new UserInfo(user);
 	}
 
 	// TODO: switch to a TINYINT field called "numOfConnections" to add/subtract
 	// the total amount of user connections
-	public void setIsPresent(User user, Boolean stat) {
-		user.setIsPresent(stat);
-
+	public void setIsPresent(User user, boolean isPresent) {
+		user.isPresent=isPresent;
 		userRepository.save(user);
 	}
 
-	public Boolean isPresent(User user) {
-		return user.getIsPresent();
-	}
-
-	public void notifyUser(User recipientUser, NotificationDto notification) {
-		if (this.isPresent(recipientUser)) {
-			simpMessagingTemplate.convertAndSend("/topic/user.notification." + recipientUser.getId(), notification);
+	public void notifyUser(User recipientUser, Notification notification) {
+		if (recipientUser.isPresent) {
+			simpMessagingTemplate.convertAndSend("/topic/user.notification." + recipientUser.id, notification);
 		} else {
-			System.out.println("sending email notification to " + recipientUser.getFullName());
+			logger.info("sending email notification to {}", recipientUser.fullName);
 			// TODO: send email
 		}
 	}

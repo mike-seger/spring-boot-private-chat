@@ -24,19 +24,19 @@ public class UserPresenceService extends ChannelInterceptorAdapter {
 		}
 
 		switch (stompDetails.getCommand()) {
-		case CONNECT:
-		case CONNECTED:
-			toggleUserPresence(stompDetails.getUser().getName().toString(), true);
-			break;
-		case DISCONNECT:
-			toggleUserPresence(stompDetails.getUser().getName().toString(), false);
-			break;
-		default:
-			break;
+			case CONNECT:
+			case CONNECTED:
+				toggleUserPresence(stompDetails.getUser().getName().toString(), true);
+				break;
+			case DISCONNECT:
+				toggleUserPresence(stompDetails.getUser().getName().toString(), false);
+				break;
+			default:
+				break;
 		}
 	}
 
-	private void toggleUserPresence(String userEmail, Boolean isPresent) {
+	private void toggleUserPresence(String userEmail, boolean isPresent) {
 		try {
 			User user = userService.getUser(userEmail);
 			userService.setIsPresent(user, isPresent);

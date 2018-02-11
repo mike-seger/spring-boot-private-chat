@@ -1,42 +1,18 @@
 package org.privatechat.dto;
 
-public class ChatMessageDto {
-	private String contents;
+import org.privatechat.model.ChatMessage;
 
-	private long fromUserId;
+public class ChatMessageInfo {
+	public String contents;
+	public long fromUserId;
+	public long toUserId;
 
-	private long toUserId;
-
-	public ChatMessageDto() {
+	public ChatMessageInfo() {
 	}
 
-	public ChatMessageDto(String contents, long fromUserId, long toUserId) {
-		this.contents = contents;
-		this.fromUserId = fromUserId;
-		this.toUserId = toUserId;
-	}
-
-	public String getContents() {
-		return this.contents;
-	}
-
-	public void setToUserId(long toUserId) {
-		this.toUserId = toUserId;
-	}
-
-	public long getToUserId() {
-		return this.toUserId;
-	}
-
-	public void setContents(String contents) {
-		this.contents = contents;
-	}
-
-	public void setFromUserId(long userId) {
-		this.fromUserId = userId;
-	}
-
-	public long getFromUserId() {
-		return this.fromUserId;
+	public ChatMessageInfo(ChatMessage chatMessage) {
+		this.contents = chatMessage.contents;
+		this.fromUserId = chatMessage.authorUser.id;
+		this.toUserId = chatMessage.recipientUser.id;
 	}
 }

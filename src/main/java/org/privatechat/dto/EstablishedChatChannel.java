@@ -1,42 +1,16 @@
 package org.privatechat.dto;
 
-public class EstablishedChatChannelDto {
-	private String channelUuid;
+public class EstablishedChatChannel {
+	public String channelUuid;
+	public String userOneFullName;
+	public String userTwoFullName;
 
-	private String userOneFullName;
-
-	private String userTwoFullName;
-
-	public EstablishedChatChannelDto() {
+	public EstablishedChatChannel() {
 	}
 
-	public EstablishedChatChannelDto(String channelUuid, String userOneFullName, String userTwoFullName) {
+	public EstablishedChatChannel(String channelUuid, String userOneFullName, String userTwoFullName) {
 		this.channelUuid = channelUuid;
 		this.userOneFullName = userOneFullName;
 		this.userTwoFullName = userTwoFullName;
-	}
-
-	public void setChannelUuid(String channelUuid) {
-		this.channelUuid = channelUuid;
-	}
-
-	public String getChannelUuid() {
-		return this.channelUuid;
-	}
-
-	public void setUserOneFullName(String userOneFullName) {
-		this.userOneFullName = userOneFullName;
-	}
-
-	public String getUserOneFullName() {
-		return this.userOneFullName;
-	}
-
-	public void setUserTwoFullName(String userTwoFullName) {
-		this.userTwoFullName = userTwoFullName;
-	}
-
-	public String getUserTwoFullName() {
-		return this.userTwoFullName;
 	}
 }

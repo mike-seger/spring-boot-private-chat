@@ -1,11 +1,11 @@
-package org.privatechat.user.controller;
+package org.privatechat.controller;
 
 import java.security.Principal;
 import java.util.List;
 
 import org.privatechat.common.JSONResponseHelper;
-import org.privatechat.dto.RegistrationDto;
-import org.privatechat.dto.UserDto;
+import org.privatechat.dto.Registration;
+import org.privatechat.dto.UserInfo;
 import org.privatechat.exception.UserNotFoundException;
 import org.privatechat.exception.ValidationException;
 import org.privatechat.model.User;
@@ -25,7 +25,7 @@ public class UserController {
 	private UserService userService;
 
 	@RequestMapping(value = "/api/user/register", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public ResponseEntity<String> register(@RequestBody RegistrationDto registeringUser) throws ValidationException {
+	public ResponseEntity<String> register(@RequestBody Registration registeringUser) throws ValidationException {
 		userService.addUser(registeringUser);
 
 		return JSONResponseHelper.createResponse("", HttpStatus.OK);
@@ -35,16 +35,13 @@ public class UserController {
 	@RequestMapping(value = "/api/user/requesting/friendslist", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<String> retrieveRequestingUserFriendsList(Principal principal) throws UserNotFoundException {
 		User requestingUser = userService.getUser(SecurityContextHolder.getContext());
-		List<UserDto> friendslistUsers = userService.retrieveFriendsList(requestingUser);
+		List<UserInfo> friendslistUsers = userService.retrieveFriendsList(requestingUser);
 
 		return JSONResponseHelper.createResponse(friendslistUsers, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/api/user/requesting/info", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<String> retrieveRequestUserInfo() throws UserNotFoundException {
-		User requestingUser = userService.getUser(SecurityContextHolder.getContext());
-		UserDto userDetails = userService.retrieveUserInfo(requestingUser);
-
-		return JSONResponseHelper.createResponse(userDetails, HttpStatus.OK);
+		return JSONResponseHelper.createResponse(new UserInfo(userService.getUser(SecurityContextHolder.getContext())), HttpStatus.OK);
 	}
 }

@@ -1,6 +1,7 @@
 package org.privatechat.repo;
 
 import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.privatechat.model.ChatMessage;
@@ -13,8 +14,8 @@ import org.springframework.stereotype.Repository;
 @Transactional
 @Repository
 public interface ChatMessageRepository extends CrudRepository<ChatMessage, String> {
-	@Query(" FROM" + "    ChatMessage m" + "  WHERE" + "    m.authorUser.id IN (:userIdOne, :userIdTwo)" + "  AND"
-			+ "    m.recipientUser.id IN (:userIdOne, :userIdTwo)" + "  ORDER BY" + "    m.timeSent" + "  DESC")
+	@Query(" FROM ChatMessage m WHERE m.authorUser.id IN (:userIdOne, :userIdTwo)  AND"
+		+ " m.recipientUser.id IN (:userIdOne, :userIdTwo) ORDER BY m.timeSent DESC")
 	public List<ChatMessage> getExistingChatMessages(@Param("userIdOne") long userIdOne,
-			@Param("userIdTwo") long userIdTwo, Pageable pageable);
+		@Param("userIdTwo") long userIdTwo, Pageable pageable);
 }
